@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TOOT FRESH — لوحة التحكم السحابية</title>
+<title>TOOT FRESH — لوحة التحكم</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -15,6 +15,8 @@
     --danger: #e74c3c;
     --warning: #f39c12;
     --purple: #8e44ad;
+    --gray: #7f8c8d;
+    --green: #27ae60;
   }
   * { box-sizing: border-box; }
   body {
@@ -40,7 +42,6 @@
   }
   button:disabled { background: #ccc; cursor: not-allowed; }
   
-  /* قسم إعدادات كلمة المرور الجانبي */
   .settings-toggle-btn {
     background: #f0f4f5; color: var(--s-color); border: 1px solid var(--line);
     padding: 10px; font-size: 13px; margin-bottom: 15px; border-radius: 8px;
@@ -58,23 +59,18 @@
     margin: 0; flex: 1; min-width: 180px;
   }
 
+  /* تصميم الأصناف */
   .item-card {
     background: #fafafa; border: 1px solid var(--line);
     border-radius: 10px; padding: 12px; margin-bottom: 10px;
     display: flex; gap: 10px; align-items: center; justify-content: space-between;
   }
+  .item-card.disabled-item { opacity: 0.6; background: #f2f2f2; }
   .item-info-box { display: flex; align-items: center; gap: 10px; flex: 1; }
-  
   .item-number {
-    background: var(--s-color);
-    color: #fff;
-    font-size: 12px;
-    font-weight: 900;
-    padding: 4px 8px;
-    border-radius: 6px;
-    flex-shrink: 0;
+    background: var(--s-color); color: #fff; font-size: 12px; font-weight: 900;
+    padding: 4px 8px; border-radius: 6px; flex-shrink: 0;
   }
-
   .img-box {
     width: 55px; height: 55px; border-radius: 8px; background: #e2e8f0;
     display: flex; align-items: center; justify-content: center;
@@ -83,10 +79,12 @@
   .img-box img { width: 100%; height: 100%; object-fit: cover; }
   .no-img-text { font-size: 10px; color: #888; text-align: center; }
 
-  .item-actions { display: flex; gap: 6px; flex-shrink: 0; }
-  .btn-sm { width: auto; padding: 6px 10px; font-size: 12px; margin: 0; border-radius: 6px; }
+  .item-actions { display: flex; gap: 4px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
+  .btn-sm { width: auto; padding: 6px 8px; font-size: 11.5px; margin: 0; border-radius: 6px; }
   .btn-edit { background: var(--warning); }
   .btn-del { background: var(--danger); }
+  .btn-status-on { background: var(--green); }
+  .btn-status-off { background: var(--gray); }
 
   .modal {
     position: fixed; top: 0; left: 0; right: 0; bottom: 0;
@@ -97,6 +95,19 @@
     background: var(--white); padding: 20px; border-radius: 12px;
     width: 100%; max-width: 450px; box-shadow: 0 5px 25px rgba(0,0,0,0.2);
   }
+
+  /* تصميم الأقسام البسيط والأنيق */
+  .sec-tag-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; margin-bottom: 10px; }
+  .sec-tag {
+    background: #eef5f6; border: 1px solid var(--line); padding: 5px 10px;
+    border-radius: 12px; font-size: 12.5px; font-weight: 700; display: flex; align-items: center; gap: 6px;
+  }
+  .sec-order-input {
+    width: 32px !important; height: 26px !important; padding: 0 !important;
+    margin: 0 !important; text-align: center; font-size: 12px; font-weight: 800;
+    border: 1px solid var(--line); border-radius: 6px; background: #fff;
+  }
+  .sec-action-icon { cursor: pointer; font-size: 13px; }
 </style>
 </head>
 <body>
@@ -115,33 +126,40 @@
     </svg>
   </div>
   <h2>🔒 تسجيل دخول الإدارة</h2>
-  <input type="text" id="user" placeholder="اسم المستخدم" onkeydown="handleLoginKeyPress(event)">
-  <input type="password" id="pass" placeholder="كلمة المرور" onkeydown="handleLoginKeyPress(event)">
+  <input type="text" id="user" placeholder="اسم المستخدم" autocomplete="off" onkeydown="handleLoginKeyPress(event)">
+  <input type="password" id="pass" placeholder="كلمة المرور" autocomplete="off" onkeydown="handleLoginKeyPress(event)">
   <button onclick="login()">دخول</button>
 </div>
 
 <div class="admin-container" id="adminBox" style="display:none;">
   <h2>🛠️ إدارة toot</h2>
 
-  <!-- زر جانبي لفتح وإغلاق قائمة تغيير الحساب -->
   <button class="settings-toggle-btn" onclick="toggleSettingsBox()">
     <span>⚙️ تغيير اسم المستخدم وكلمة المرور</span>
     <span id="toggleIcon">▼</span>
   </button>
 
-  <!-- صندوق الحساب الإداري -->
   <div class="settings-card" id="settingsBox">
     <h3 style="margin-top:0; font-size:15px; color:var(--s-color);">🔑 التعديل على بيانات الحساب</h3>
-    <input type="password" id="oldAdminPass" placeholder="كلمة المرور الحالية (إجباري) *">
-    <input type="text" id="newAdminUser" placeholder="اسم المستخدم الجديد">
-    <input type="password" id="newAdminPass" placeholder="كلمة المرور الجديدة">
+    <input type="password" id="oldAdminPass" placeholder="كلمة المرور الحالية (إجباري) *" autocomplete="off">
+    <input type="text" id="newAdminUser" placeholder="اسم المستخدم الجديد" autocomplete="off">
+    <input type="password" id="newAdminPass" placeholder="كلمة المرور الجديدة" autocomplete="off">
     <button onclick="updateAdminCredentials()" style="background:var(--purple); margin-bottom:0; margin-top:8px;">💾 تحديث البيانات</button>
   </div>
 
+  <div style="background: #fdfaf6; border: 1px solid var(--line); border-radius: 12px; padding: 15px; margin-bottom: 20px;">
+    <h3 style="margin-top:0; font-size:15px; color:var(--s-color);">📁 إضافة وإدارة الأقسام:</h3>
+    <div style="display:flex; gap:8px;">
+      <input type="text" id="newSecTitle" placeholder="اسم القسم الجديد" autocomplete="off" style="margin-top:0; margin-bottom:0;">
+      <button onclick="addNewSection()" style="width:120px; margin-top:0; margin-bottom:0; flex-shrink:0;">➕ إضافة</button>
+    </div>
+    <div class="sec-tag-list" id="sectionsTagList">جاري التحميل...</div>
+  </div>
+
   <h3>إضافة صنف جديد:</h3>
-  <input type="text" id="itemName" placeholder="اسم الصنف">
+  <input type="text" id="itemName" placeholder="اسم الصنف" autocomplete="off">
   <select id="itemSec"></select>
-  <input type="text" id="itemPrice" placeholder="السعر (مثال: 5.000 د.ع)">
+  <input type="text" id="itemPrice" placeholder="السعر (مثال: 5.000 د.ع)" autocomplete="off">
   
   <label style="font-size: 12px; font-weight: 800; display: block;">صورة للصنف (اختياري):</label>
   <input type="file" id="itemFile" accept="image/*">
@@ -154,7 +172,7 @@
     <select id="filterSec" onchange="renderAdminItems()">
       <option value="all">كل الأقسام</option>
     </select>
-    <input type="text" id="adminSearch" placeholder="🔍 بحث عن صنف..." oninput="renderAdminItems()">
+    <input type="text" id="adminSearch" placeholder="🔍 بحث عن صنف..." autocomplete="off" oninput="debouncedRender()">
   </div>
 
   <div id="itemsList">جاري التحميل...</div>
@@ -165,11 +183,11 @@
     <h3 style="margin-top:0;">✏️ تعديل بيانات الصنف</h3>
     <input type="hidden" id="editId">
     <label style="font-size:12px; font-weight:800;">اسم الصنف:</label>
-    <input type="text" id="editName">
+    <input type="text" id="editName" autocomplete="off">
     <label style="font-size:12px; font-weight:800;">القسم:</label>
     <select id="editSec"></select>
     <label style="font-size:12px; font-weight:800;">السعر:</label>
-    <input type="text" id="editPrice">
+    <input type="text" id="editPrice" autocomplete="off">
     <label style="font-size:12px; font-weight:800;">تغيير الصورة (اختياري):</label>
     <input type="file" id="editFile" accept="image/*">
     <div style="display:flex; gap:10px; margin-top:10px;">
@@ -195,36 +213,32 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
-  const menuSections = [
-    { id: 'icecream', title: 'آيس كريم' },
-    { id: 'gelato', title: 'جيلاتو إيطالي' },
-    { id: 'hotdrinks', title: 'مشروبات ساخنة' },
-    { id: 'colddrinks', title: 'عصائر ومشروبات باردة' },
-    { id: 'mojito', title: 'موهيتو وآيس تي' },
-    { id: 'milkshake', title: 'ميلك شيك وفراب' },
-    { id: 'cakesalad', title: 'كيك وسلطات ودونات' },
-    { id: 'crepe', title: 'كريب' },
-    { id: 'waffle', title: 'وافل' },
-    { id: 'pancake', title: 'بانكيك' },
-    { id: 'bano', title: 'كنافة وبانو' },
-    { id: 'special', title: 'أصناف مميزة وباولز' },
-    { id: 'birthdays', title: 'أعياد الميلاد' }
+  const defaultSections = [
+    { id: 'icecream', title: 'آيس كريم', order: 1 },
+    { id: 'gelato', title: 'جيلاتو إيطالي', order: 2 },
+    { id: 'hotdrinks', title: 'مشروبات ساخنة', order: 3 },
+    { id: 'colddrinks', title: 'عصائر ومشروبات باردة', order: 4 },
+    { id: 'mojito', title: 'موهيتو وآيس تي', order: 5 },
+    { id: 'milkshake', title: 'ميلك شيك وفراب', order: 6 },
+    { id: 'cakesalad', title: 'كيك وسلطات ودونات', order: 7 },
+    { id: 'crepe', title: 'كريب', order: 8 },
+    { id: 'waffle', title: 'وافل', order: 9 },
+    { id: 'pancake', title: 'بانكيك', order: 10 },
+    { id: 'bano', title: 'كنافة وبانو', order: 11 },
+    { id: 'special', title: 'أصناف مميزة وباولز', order: 12 },
+    { id: 'birthdays', title: 'أعياد الميلاد', order: 13 }
   ];
 
+  let menuSections = [];
   let currentItems = [];
   let adminAuth = { user: 'admin', pass: '123456' };
+  let searchTimeout = null;
 
   db.collection("settings").doc("auth").onSnapshot(doc => {
-    if (doc.exists) {
-      adminAuth = doc.data();
-    }
+    if (doc.exists) adminAuth = doc.data();
   });
 
-  function handleLoginKeyPress(e) {
-    if (e.key === 'Enter') {
-      login();
-    }
-  }
+  function handleLoginKeyPress(e) { if (e.key === 'Enter') login(); }
 
   function login() {
     const u = document.getElementById('user').value.trim();
@@ -233,21 +247,14 @@
       document.getElementById('loginBox').style.display = 'none';
       document.getElementById('adminBox').style.display = 'block';
       loadAdminData();
-    } else {
-      alert('خطأ في اسم المستخدم أو كلمة المرور!');
-    }
+    } else alert('خطأ في اسم المستخدم أو كلمة المرور!');
   }
 
   function toggleSettingsBox() {
     const box = document.getElementById('settingsBox');
     const icon = document.getElementById('toggleIcon');
-    if (box.style.display === 'block') {
-      box.style.display = 'none';
-      icon.textContent = '▼';
-    } else {
-      box.style.display = 'block';
-      icon.textContent = '▲';
-    }
+    box.style.display = box.style.display === 'block' ? 'none' : 'block';
+    icon.textContent = box.style.display === 'block' ? '▲' : '▼';
   }
 
   function updateAdminCredentials() {
@@ -258,36 +265,27 @@
     if (!oldPass) return alert('⚠️ يرجى كتابة كلمة المرور الحالية للتأكيد!');
     if (oldPass !== adminAuth.pass) return alert('❌ كلمة المرور الحالية غير صحيحة!');
 
-    const updatedUser = newUser !== '' ? newUser : adminAuth.user;
-    const updatedPass = newPass !== '' ? newPass : adminAuth.pass;
-
     db.collection("settings").doc("auth").set({
-      user: updatedUser,
-      pass: updatedPass
+      user: newUser !== '' ? newUser : adminAuth.user,
+      pass: newPass !== '' ? newPass : adminAuth.pass
     }).then(() => {
       alert('🎉 تم تحديث بيانات الدخول بنجاح!');
       document.getElementById('oldAdminPass').value = '';
       document.getElementById('newAdminUser').value = '';
       document.getElementById('newAdminPass').value = '';
       toggleSettingsBox();
-    }).catch(() => {
-      alert('حدث خطأ أثناء التحديث!');
     });
   }
 
   function loadAdminData() {
-    const secSelect = document.getElementById('itemSec');
-    const editSecSelect = document.getElementById('editSec');
-    const filterSecSelect = document.getElementById('filterSec');
-
-    secSelect.innerHTML = '';
-    editSecSelect.innerHTML = '';
-    filterSecSelect.innerHTML = '<option value="all">الكل (جميع الأقسام)</option>';
-
-    menuSections.forEach(s => {
-      secSelect.innerHTML += `<option value="${s.id}">${s.title}</option>`;
-      editSecSelect.innerHTML += `<option value="${s.id}">${s.title}</option>`;
-      filterSecSelect.innerHTML += `<option value="${s.id}">${s.title}</option>`;
+    db.collection("sections").onSnapshot(snapshot => {
+      if (snapshot.empty) {
+        defaultSections.forEach(s => db.collection("sections").doc(s.id).set(s));
+      } else {
+        menuSections = snapshot.docs.map(doc => doc.data());
+        menuSections.sort((a, b) => (a.order || 0) - (b.order || 0));
+        populateSectionsUI();
+      }
     });
 
     db.collection("items").onSnapshot(snapshot => {
@@ -296,16 +294,78 @@
     });
   }
 
+  function populateSectionsUI() {
+    const secSelect = document.getElementById('itemSec');
+    const editSecSelect = document.getElementById('editSec');
+    const filterSecSelect = document.getElementById('filterSec');
+    const tagsContainer = document.getElementById('sectionsTagList');
+
+    secSelect.innerHTML = '';
+    editSecSelect.innerHTML = '';
+    filterSecSelect.innerHTML = '<option value="all">الكل (جميع الأقسام)</option>';
+    tagsContainer.innerHTML = '';
+
+    menuSections.forEach((s, idx) => {
+      secSelect.innerHTML += `<option value="${s.id}">${s.title}</option>`;
+      editSecSelect.innerHTML += `<option value="${s.id}">${s.title}</option>`;
+      filterSecSelect.innerHTML += `<option value="${s.id}">${s.title}</option>`;
+      
+      const currentOrder = s.order !== undefined ? s.order : (idx + 1);
+
+      tagsContainer.innerHTML += `
+        <div class="sec-tag">
+          <input type="number" class="sec-order-input" value="${currentOrder}" onchange="updateSectionOrder('${s.id}', this.value)">
+          <span>${s.title}</span>
+          <span class="sec-action-icon" style="color:var(--warning);" onclick="editSection('${s.id}', '${s.title}')">✏️</span>
+          <span class="sec-action-icon" style="color:var(--danger);" onclick="deleteSection('${s.id}', '${s.title}')">✕</span>
+        </div>
+      `;
+    });
+  }
+
+  function updateSectionOrder(id, newOrderVal) {
+    const newOrder = parseInt(newOrderVal) || 0;
+    db.collection("sections").doc(id).update({ order: newOrder });
+  }
+
+  function addNewSection() {
+    const title = document.getElementById('newSecTitle').value.trim();
+    if (!title) return alert('⚠️ يرجى كتابة اسم القسم أولاً!');
+
+    const id = 'sec_' + Date.now();
+    const newOrder = menuSections.length > 0 ? (Math.max(...menuSections.map(s => s.order || 0)) + 1) : 1;
+    
+    db.collection("sections").doc(id).set({ id, title, order: newOrder }).then(() => {
+      document.getElementById('newSecTitle').value = '';
+    });
+  }
+
+  function editSection(id, oldTitle) {
+    const newTitle = prompt('أدخل الاسم الجديد للقسم:', oldTitle);
+    if (newTitle !== null && newTitle.trim() !== '') {
+      db.collection("sections").doc(id).update({ title: newTitle.trim() });
+    }
+  }
+
+  function deleteSection(id, title) {
+    if (confirm(`هل أنت تأكد من حذف قسم (${title})؟`)) {
+      db.collection("sections").doc(id).delete();
+    }
+  }
+
+  function debouncedRender() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => renderAdminItems(), 150);
+  }
+
   function renderAdminItems() {
     const list = document.getElementById('itemsList');
     const query = document.getElementById('adminSearch').value.toLowerCase().trim();
     const selectedSec = document.getElementById('filterSec').value;
-    list.innerHTML = '';
 
     const filtered = currentItems.filter(i => {
-      const matchQuery = query === '' || i.name.toLowerCase().includes(query);
-      const matchSec = selectedSec === 'all' || i.section === selectedSec;
-      return matchQuery && matchSec;
+      return (query === '' || i.name.toLowerCase().includes(query)) &&
+             (selectedSec === 'all' || i.section === selectedSec);
     });
 
     if (filtered.length === 0) {
@@ -313,13 +373,16 @@
       return;
     }
 
+    let htmlBuffer = '';
     filtered.forEach((item, index) => {
       const imgContent = item.image 
         ? `<img src="${item.image}" alt="${item.name}">` 
         : `<span class="no-img-text">بدون صورة</span>`;
 
-      list.innerHTML += `
-        <div class="item-card">
+      const isAvailable = item.isAvailable !== false;
+
+      htmlBuffer += `
+        <div class="item-card ${isAvailable ? '' : 'disabled-item'}">
           <div class="item-info-box">
             <div class="item-number">#${index + 1}</div>
             <div class="img-box">${imgContent}</div>
@@ -329,12 +392,20 @@
             </div>
           </div>
           <div class="item-actions">
+            <button class="btn-sm ${isAvailable ? 'btn-status-on' : 'btn-status-off'}" onclick="toggleItemStatus('${item.id}', ${isAvailable})">
+              ${isAvailable ? '✅ متوفر' : '🚫 غير متوفر'}
+            </button>
             <button class="btn-sm btn-edit" onclick="openEditModal('${item.id}')">✏️ تعديل</button>
             <button class="btn-sm btn-del" onclick="deleteItem('${item.id}')">🗑️ حذف</button>
           </div>
         </div>
       `;
     });
+    list.innerHTML = htmlBuffer;
+  }
+
+  function toggleItemStatus(id, currentStatus) {
+    db.collection("items").doc(id).update({ isAvailable: !currentStatus });
   }
 
   async function addItem() {
@@ -355,7 +426,7 @@
     }
 
     db.collection("items").add({
-      name, price, section, image: imageUrl, createdAt: new Date()
+      name, price, section, image: imageUrl, isAvailable: true, createdAt: new Date()
     }).then(() => {
       alert('تمت الإضافة بنجاح!');
       document.getElementById('itemName').value = '';
@@ -377,9 +448,7 @@
     document.getElementById('editModal').style.display = 'flex';
   }
 
-  function closeEditModal() {
-    document.getElementById('editModal').style.display = 'none';
-  }
+  function closeEditModal() { document.getElementById('editModal').style.display = 'none'; }
 
   async function saveEdit() {
     const id = document.getElementById('editId').value;
@@ -393,10 +462,7 @@
     let updateData = { name, price, section };
 
     if (fileInput.files.length > 0) {
-      try {
-        const imageUrl = await convertToBase64(fileInput.files[0]);
-        updateData.image = imageUrl;
-      } catch (e) {}
+      try { updateData.image = await convertToBase64(fileInput.files[0]); } catch (e) {}
     }
 
     db.collection("items").doc(id).update(updateData).then(() => {
