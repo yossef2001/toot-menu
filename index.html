@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>TOOT FRESH — المنيو الإلكتروني</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --p-color: #1e6b76;
+    --s-color: #134651;
+    --bg-color: #FAF8F5;
+    --text-color: #0E2A30;
+    --white: #FFFFFF;
+    --line: rgba(19, 70, 81, 0.12);
+    --whatsapp-green: #25D366;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    margin: 0; padding: 0;
+    background: var(--bg-color); color: var(--text-color);
+    font-family: 'Cairo', sans-serif; padding-bottom: 90px;
+  }
+
+  .header {
+    background: var(--white);
+    color: var(--s-color);
+    text-align: center;
+    padding: 15px 10px;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    border-bottom: 2px solid var(--line);
+  }
+  .brand-logo-container {
+    max-width: 130px;
+    margin: 0 auto 5px;
+  }
+  .brand-logo-container svg { width: 100%; height: auto; display: block; }
+
+  .header p.slogan {
+    margin: 4px 0 6px;
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--s-color);
+    letter-spacing: 0.5px;
+  }
+
+  .flag-bar {
+    display: flex; justify-content: center; align-items: center;
+    gap: 3px; width: 100px; height: 4px; margin: 0 auto;
+    border-radius: 10px; overflow: hidden;
+  }
+  .flag-bar .green { background: #009246; flex: 1; height: 100%; }
+  .flag-bar .white { background: #e0e0e0; flex: 1; height: 100%; }
+  .flag-bar .red { background: #CE2B37; flex: 1; height: 100%; }
+
+  .sticky-nav {
+    position: sticky; top: 0; background: var(--bg-color);
+    z-index: 100; padding: 8px 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .search-box {
+    width: 100%; padding: 8px 12px; border: 1px solid var(--line);
+    border-radius: 20px; font-family: inherit; font-size: 13px; outline: none;
+    background: var(--white);
+  }
+  .sections-bar {
+    display: flex; gap: 6px; overflow-x: auto; padding: 8px 0 2px; scrollbar-width: none;
+  }
+  .sections-bar::-webkit-scrollbar { display: none; }
+  .sec-btn {
+    white-space: nowrap; background: var(--white); color: var(--s-color);
+    border: 1px solid var(--line); padding: 5px 12px; border-radius: 16px;
+    font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+  }
+  .sec-btn.active { background: var(--p-color); color: var(--white); border-color: var(--p-color); }
+
+  .container { padding: 10px; max-width: 600px; margin: 0 auto; }
+  
+  .section-block { scroll-margin-top: 110px; }
+  
+  .section-title {
+    font-size: 15px; font-weight: 800; color: var(--s-color);
+    margin: 15px 0 8px; display: flex; align-items: center; gap: 8px;
+  }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+
+  .grid-menu {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;
+  }
+
+  .item-card {
+    background: var(--white); border-radius: 12px; border: 1px solid var(--line);
+    padding: 8px; display: flex; flex-direction: column; justify-content: space-between;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+  }
+  
+  .item-card .img-box {
+    width: 100%; height: 95px; border-radius: 8px;
+    margin-bottom: 6px; background: #f5f5f5; display: flex;
+    align-items: center; justify-content: center; overflow: hidden;
+  }
+  .item-card img { width: 100%; height: 100%; object-fit: cover; }
+  .item-card .no-img-icon { font-size: 26px; opacity: 0.3; }
+  
+  .item-title { font-size: 12.5px; font-weight: 800; margin: 0 0 3px; color: var(--s-color); line-height: 1.25; }
+  .item-desc { font-size: 10px; color: #666; margin: 0 0 6px; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  
+  .item-footer {
+    display: flex; justify-content: space-between; align-items: center; margin-top: 4px; gap: 4px;
+  }
+  .item-price { font-size: 11.5px; font-weight: 800; color: var(--p-color); white-space: nowrap; }
+  .add-cart-btn {
+    background: var(--p-color); color: var(--white); border: none;
+    padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;
+    cursor: pointer; font-family: inherit; white-space: nowrap;
+  }
+
+  .cart-bar {
+    position: fixed; bottom: 12px; left: 12px; right: 12px;
+    max-width: 450px; margin: 0 auto; background: var(--s-color);
+    color: var(--white); padding: 10px 16px; border-radius: 25px;
+    display: flex; justify-content: space-between; align-items: center;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2); z-index: 1000; cursor: pointer;
+  }
+  .cart-info { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+  .cart-count {
+    background: #e67e22; color: white; font-weight: 900;
+    width: 24px; height: 24px; border-radius: 50%; display: flex;
+    align-items: center; justify-content: center; font-size: 12px;
+  }
+  .cart-total { font-size: 14px; font-weight: 800; }
+
+  .cart-drawer {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.6); z-index: 2000; display: none; justify-content: flex-end;
+  }
+  .cart-content {
+    background: var(--white); width: 100%; max-width: 400px; height: 100%;
+    display: flex; flex-direction: column; padding: 15px;
+    box-shadow: -5px 0 25px rgba(0,0,0,0.2);
+  }
+  .cart-header {
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 2px solid var(--line); padding-bottom: 8px;
+  }
+  .cart-header h2 { margin: 0; font-size: 16px; color: var(--s-color); }
+  .close-cart { font-size: 20px; cursor: pointer; border: none; background: none; font-weight: 800; }
+  
+  .cart-items-list { flex: 1; overflow-y: auto; margin: 10px 0; }
+  .cart-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 0; border-bottom: 1px solid var(--line);
+  }
+  .cart-item-details strong { display: block; font-size: 13px; }
+  .cart-item-details span { font-size: 11px; color: var(--p-color); font-weight: 700; }
+  .cart-item-controls { display: flex; align-items: center; gap: 6px; }
+  .qty-btn {
+    width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--p-color);
+    background: var(--white); color: var(--p-color); font-weight: 800; cursor: pointer;
+  }
+
+  .order-form { background: #fdfaf6; padding: 10px; border-radius: 8px; margin-bottom: 8px; }
+  .order-form input, .order-form select {
+    width: 100%; padding: 8px; margin-top: 6px; border: 1px solid var(--line);
+    border-radius: 6px; font-family: inherit; font-size: 12.5px; outline: none; background: var(--white);
+  }
+  .whatsapp-send-btn {
+    background: var(--whatsapp-green); color: var(--white); border: none;
+    padding: 10px; border-radius: 8px; font-weight: 800; font-size: 14px;
+    cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; font-family: inherit;
+  }
+
+  /* إخفاء شعار Netlify السفلي */
+  [data-netlify-deploy-id],
+  iframe[src*="netlify"],
+  .netlify-badge,
+  div[class*="netlify"] {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="brand-logo-container">
+    <svg viewBox="0 0 300 200" width="100%" height="auto">
+      <path d="M150 20 C130 20 115 35 115 55 C115 65 120 73 127 80 L150 120 L173 80 C180 73 185 65 185 55 C185 35 170 20 150 20 Z" fill="#1e6b76"/>
+      <path d="M135 55 C135 45 142 40 150 40 C158 40 165 45 165 55" stroke="#FFFFFF" stroke-width="3" fill="none"/>
+      <polygon points="140,85 160,85 150,110" fill="#1e6b76"/>
+      <path d="M125 60 C120 70 120 80 128 88" stroke="#1e6b76" stroke-width="4" fill="none"/>
+      <path d="M175 60 C180 70 180 80 172 88" stroke="#1e6b76" stroke-width="4" fill="none"/>
+      <text x="150" y="145" font-family="'Cairo', sans-serif" font-weight="900" font-size="34" fill="#1e6b76" text-anchor="middle">TOOT</text>
+      <text x="202" y="122" font-family="'Cairo', sans-serif" font-weight="800" font-size="12" fill="#1e6b76" text-anchor="middle">FRESH</text>
+      <text x="150" y="165" font-family="'Cairo', sans-serif" font-weight="800" font-size="11" fill="#1e6b76" text-anchor="middle" letter-spacing="2">JUICE AND ICE CREAM</text>
+    </svg>
+  </div>
+  
+  <p class="slogan">THE FLAVOR OF ITALY THE SPIRIT OF IRAQ</p>
+
+  <div class="flag-bar">
+    <div class="green"></div>
+    <div class="white"></div>
+    <div class="red"></div>
+  </div>
+</div>
+
+<div class="sticky-nav">
+  <input type="text" class="search-box" id="searchInput" placeholder="🔍 بحث عن صنف..." oninput="filterMenu()">
+  <div class="sections-bar" id="sectionsBar"></div>
+</div>
+
+<div class="container" id="menuContainer"></div>
+
+<div class="cart-bar" id="cartBar" style="display:none;" onclick="openCart()">
+  <div class="cart-info">
+    <div class="cart-count" id="cartCount">0</div>
+    <span>سلة الطلبات</span>
+  </div>
+  <div class="cart-total" id="cartTotalSum">0 د.ع</div>
+</div>
+
+<div class="cart-drawer" id="cartDrawer">
+  <div class="cart-content">
+    <div class="cart-header">
+      <h2>🛒 تفاصيل الطلب</h2>
+      <button class="close-cart" onclick="closeCart()">✕</button>
+    </div>
+    <div class="cart-items-list" id="cartItemsList"></div>
+    <div class="order-form">
+      <label style="font-size:11px; font-weight:800;">بيانات التوصيل والطلب:</label>
+      <select id="orderType" onchange="handleOrderTypeChange()">
+        <option value="داخل المحل">تناول داخل المحل 🍽️</option>
+        <option value="سفري">سفري (تجهيز) 🛍️</option>
+        <option value="توصيل">توصيل منزلي 🛵</option>
+      </select>
+      <input type="text" id="custName" placeholder="الاسم (إجباري) *">
+      <input type="text" id="custAddress" placeholder="رقم الطاولة (اختياري)">
+    </div>
+    <button class="whatsapp-send-btn" onclick="sendOrderToWhatsApp()">
+      📲 إرسال الطلب عبر الواتساب
+    </button>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCYo1y3e-S9y3I_U1kCg8a9J8E7kL0mN1o",
+    authDomain: "toot-fresh-menu.firebaseapp.com",
+    projectId: "toot-fresh-menu",
+    storageBucket: "toot-fresh-menu.appspot.com",
+    messagingSenderId: "56360410058",
+    appId: "1:56360410058:web:7dbfae782e3c0d832df7ff"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  // رقم الواتساب المحدث لـ TOOT FRESH
+  const WHATSAPP_NUMBER = "9647708888761";
+
+  const defaultSections = [
+    { id: 'icecream', title: 'آيس كريم' },
+    { id: 'gelato', title: 'جيلاتو إيطالي' },
+    { id: 'hotdrinks', title: 'مشروبات ساخنة' },
+    { id: 'colddrinks', title: 'عصائر ومشروبات باردة' },
+    { id: 'mojito', title: 'موهيتو وآيس تي' },
+    { id: 'milkshake', title: 'ميلك شيك وفراب' },
+    { id: 'cakesalad', title: 'كيك وسلطات ودونات' },
+    { id: 'crepe', title: 'كريب' },
+    { id: 'waffle', title: 'وافل' },
+    { id: 'pancake', title: 'بانكيك' },
+    { id: 'bano', title: 'كنافة وبانو' },
+    { id: 'special', title: 'أصناف مميزة وباولز' },
+    { id: 'birthdays', title: 'أعياد الميلاد' }
+  ];
+
+  let sections = defaultSections;
+  let items = [];
+  let cart = [];
+  let isManualScroll = false;
+
+  function listenToData() {
+    db.collection("sections").onSnapshot(snapshot => {
+      if (!snapshot.empty) sections = snapshot.docs.map(doc => doc.data());
+      renderSectionsBar();
+    });
+
+    db.collection("items").onSnapshot(snapshot => {
+      items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      renderMenu();
+    });
+  }
+
+  function renderSectionsBar() {
+    const bar = document.getElementById('sectionsBar');
+    bar.innerHTML = `<button class="sec-btn active" data-sec="all" onclick="scrollToSec('all', this)">الكل</button>`;
+    sections.forEach(s => {
+      bar.innerHTML += `<button class="sec-btn" data-sec="${s.id}" onclick="scrollToSec('${s.id}', this)">${s.title}</button>`;
+    });
+  }
+
+  function scrollToSec(secId, btn) {
+    isManualScroll = true;
+    document.querySelectorAll('.sec-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+
+    if (secId === 'all') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setTimeout(() => isManualScroll = false, 800);
+    } else {
+      const el = document.getElementById(`sec-${secId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+        setTimeout(() => isManualScroll = false, 800);
+      }
+    }
+  }
+
+  window.addEventListener('scroll', () => {
+    if (isManualScroll) return;
+    const scrollPos = window.scrollY + 130;
+    
+    sections.forEach(sec => {
+      const el = document.getElementById(`sec-${sec.id}`);
+      if (el) {
+        const top = el.offsetTop;
+        const height = el.offsetHeight;
+        if (scrollPos >= top && scrollPos < top + height) {
+          const btn = document.querySelector(`.sec-btn[data-sec="${sec.id}"]`);
+          if (btn && !btn.classList.contains('active')) {
+            document.querySelectorAll('.sec-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+          }
+        }
+      }
+    });
+  });
+
+  function parsePrice(priceStr) {
+    return parseInt(String(priceStr).replace(/[^0-9]/g, '')) || 0;
+  }
+
+  function renderMenu(query = '') {
+    const container = document.getElementById('menuContainer');
+    container.innerHTML = '';
+
+    sections.forEach(sec => {
+      const secItems = items.filter(i => i.section === sec.id && (query === '' || i.name.toLowerCase().includes(query)));
+      if (secItems.length > 0) {
+        let secHtml = `<div id="sec-${sec.id}" class="section-block"><div class="section-title">${sec.title}</div><div class="grid-menu">`;
+        secItems.forEach(item => {
+          const imgContent = item.image ? `<img src="${item.image}" alt="${item.name}">` : `<span class="no-img-icon">🍨</span>`;
+          const descTag = item.desc ? `<div class="item-desc">${item.desc}</div>` : '';
+          secHtml += `
+            <div class="item-card">
+              <div>
+                <div class="img-box">${imgContent}</div>
+                <div class="item-title">${item.name}</div>
+                ${descTag}
+              </div>
+              <div class="item-footer">
+                <div class="item-price">${item.price}</div>
+                <button class="add-cart-btn" onclick="addToCart('${item.name}', '${item.price}')">➕ إضافة</button>
+              </div>
+            </div>
+          `;
+        });
+        secHtml += `</div></div>`;
+        container.innerHTML += secHtml;
+      }
+    });
+  }
+
+  function filterMenu() {
+    const q = document.getElementById('searchInput').value.toLowerCase().trim();
+    renderMenu(q);
+  }
+
+  function handleOrderTypeChange() {
+    const orderType = document.getElementById('orderType').value;
+    const nameInput = document.getElementById('custName');
+    const addressInput = document.getElementById('custAddress');
+
+    if (orderType === 'توصيل') {
+      nameInput.placeholder = 'الاسم الكامل (إجباري) *';
+      addressInput.placeholder = 'عنوان التوصيل (إجباري) *';
+    } else if (orderType === 'داخل المحل') {
+      nameInput.placeholder = 'الاسم (إجباري) *';
+      addressInput.placeholder = 'رقم الطاولة (اختياري)';
+    } else {
+      nameInput.placeholder = 'الاسم (إجباري) *';
+      addressInput.placeholder = 'ملاحظات إضافية (اختياري)';
+    }
+  }
+
+  function addToCart(name, priceStr) {
+    const price = parsePrice(priceStr);
+    const existing = cart.find(i => i.name === name);
+    if (existing) existing.qty++;
+    else cart.push({ name, price, qty: 1 });
+    updateCartUI();
+  }
+
+  function updateQty(name, delta) {
+    const item = cart.find(i => i.name === name);
+    if (item) {
+      item.qty += delta;
+      if (item.qty <= 0) cart = cart.filter(i => i.name !== name);
+    }
+    updateCartUI();
+  }
+
+  function updateCartUI() {
+    const totalCount = cart.reduce((sum, i) => sum + i.qty, 0);
+    const totalPrice = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+    document.getElementById('cartCount').textContent = totalCount;
+    document.getElementById('cartTotalSum').textContent = totalPrice.toLocaleString() + ' د.ع';
+
+    const cartBar = document.getElementById('cartBar');
+    if (totalCount > 0) cartBar.style.display = 'flex';
+    else { cartBar.style.display = 'none'; closeCart(); }
+
+    const list = document.getElementById('cartItemsList');
+    list.innerHTML = '';
+    cart.forEach(i => {
+      list.innerHTML += `
+        <div class="cart-item">
+          <div class="cart-item-details">
+            <strong>${i.name}</strong>
+            <span>${(i.price * i.qty).toLocaleString()} د.ع</span>
+          </div>
+          <div class="cart-item-controls">
+            <button class="qty-btn" onclick="updateQty('${i.name}', -1)">-</button>
+            <span style="font-weight:800;">${i.qty}</span>
+            <button class="qty-btn" onclick="updateQty('${i.name}', 1)">+</button>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  function openCart() { document.getElementById('cartDrawer').style.display = 'flex'; }
+  function closeCart() { document.getElementById('cartDrawer').style.display = 'none'; }
+
+  function sendOrderToWhatsApp() {
+    if (cart.length === 0) return;
+    const orderType = document.getElementById('orderType').value;
+    const name = document.getElementById('custName').value.trim();
+    const address = document.getElementById('custAddress').value.trim();
+
+    if (!name) return alert('⚠️ يرجى كتابة اسمك أولاً!');
+    if (orderType === 'توصيل' && !address) return alert('⚠️ يرجى كتابة عنوان التوصيل!');
+
+    const totalPrice = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+    let msg = `*طلب جديد من المنيو 📋*\n\n*نوع الطلب:* ${orderType}\n*الاسم:* ${name}\n`;
+    if (address) msg += `*العنوان/الطاولة:* ${address}\n`;
+    msg += `\n*الطلبات:*\n`;
+    cart.forEach((item, index) => {
+      msg += `${index + 1}. ${item.name} × ${item.qty} = ${(item.price * item.qty).toLocaleString()} د.ع\n`;
+    });
+    msg += `\n*المجموع:* ${totalPrice.toLocaleString()} د.ع\n`;
+
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+  }
+
+  listenToData();
+  handleOrderTypeChange();
+</script>
+</body>
+</html>
