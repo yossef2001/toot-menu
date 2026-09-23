@@ -35,23 +35,26 @@
     font-family: 'Cairo', sans-serif; padding-bottom: 90px;
   }
 
+  /* شريط التثبيت العائم المحدث */
   .pwa-install-banner {
     position: fixed; top: 10px; left: 10px; right: 10px;
     background: #123d46; color: white; padding: 10px 14px;
-    border-radius: 12px; display: none; align-items: center;
+    border-radius: 12px; display: flex; align-items: center;
     justify-content: space-between; z-index: 9999;
     box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.1);
   }
   .pwa-install-btn {
     background: var(--gold); color: #123d46; border: none;
     padding: 6px 14px; border-radius: 8px; font-weight: 800;
     font-size: 12px; cursor: pointer; font-family: inherit;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
   }
 
   .header {
     background: var(--bg-color);
     text-align: center;
-    padding: 0 10px 25px;
+    padding: 45px 10px 25px; /* مسافة أمان لشريط التثبيت العائم */
     position: relative;
   }
 
@@ -288,10 +291,10 @@
 
 <script>
   let deferredPrompt;
+
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
-    document.getElementById('pwaBanner').style.display = 'flex';
   });
 
   function triggerPWAInstall() {
@@ -301,6 +304,8 @@
         document.getElementById('pwaBanner').style.display = 'none';
         deferredPrompt = null;
       });
+    } else {
+      alert('📱 لتثبيت تطبيق TOOT على شاشة هاتفك:\nاضغط على خيارات المتصفح (⋮) في أعلى أو أسفل الشاشة، ثم اختر "الإضافة إلى الشاشة الرئيسية" أو "تثبيت التطبيق".');
     }
   }
 
