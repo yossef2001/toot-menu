@@ -5,19 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>TOOT FRESH — المنيو الإلكتروني</title>
 
-<!-- PWA Metadata & Device Support -->
+<!-- PWA Metadata & iOS Support -->
 <link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#123d46">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="TOOT">
-<meta name="theme-color" content="#123d46">
 <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/938/938063.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Great+Vibes&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
-
 <style>
   :root {
     --p-color: #123d46;
@@ -34,6 +33,19 @@
     margin: 0; padding: 0;
     background: var(--bg-color); color: var(--text-color);
     font-family: 'Cairo', sans-serif; padding-bottom: 90px;
+  }
+
+  .pwa-install-banner {
+    position: fixed; top: 10px; left: 10px; right: 10px;
+    background: #123d46; color: white; padding: 10px 14px;
+    border-radius: 12px; display: none; align-items: center;
+    justify-content: space-between; z-index: 9999;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+  }
+  .pwa-install-btn {
+    background: var(--gold); color: #123d46; border: none;
+    padding: 6px 14px; border-radius: 8px; font-weight: 800;
+    font-size: 12px; cursor: pointer; font-family: inherit;
   }
 
   .header {
@@ -198,6 +210,11 @@
 </head>
 <body>
 
+<div class="pwa-install-banner" id="pwaBanner">
+  <span style="font-size:12px; font-weight:700;">📱 تثبيت تطبيق TOOT على هاتفك</span>
+  <button class="pwa-install-btn" onclick="triggerPWAInstall()">تثبيت الأن</button>
+</div>
+
 <div class="header">
   <svg class="banner-svg" viewBox="0 0 1000 120" preserveAspectRatio="none">
     <path d="M0,20 Q500,100 1000,20 L1000,38 Q500,118 0,38 Z" fill="#123d46"/>
@@ -270,8 +287,25 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 
 <script>
+  let deferredPrompt;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    document.getElementById('pwaBanner').style.display = 'flex';
+  });
+
+  function triggerPWAInstall() {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(() => {
+        document.getElementById('pwaBanner').style.display = 'none';
+        deferredPrompt = null;
+      });
+    }
+  }
+
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js');
+    navigator.serviceWorker.register('./sw.js');
   }
 
   const firebaseConfig = {
@@ -285,7 +319,6 @@
 
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
-  
   const WHATSAPP_NUMBER = "9647708888761";
 
   const defaultSections = [
