@@ -4,8 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>TOOT FRESH — المنيو الإلكتروني</title>
+
+<!-- PWA Metadata & iOS Support -->
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#123d46">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TOOT">
+<link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/938/938063.png">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Great+Vibes&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
@@ -261,6 +268,546 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 
 <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js');
+  }
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCYo1y3e-S9y3I_U1kCg8a9J8E7kL0mN1o",
+    authDomain: "toot-fresh-menu.firebaseapp.com",
+    projectId: "toot-fresh-menu",
+    storageBucket: "toot-fresh-menu.appspot.com",
+    messagingSenderId: "56360410058",
+    appId: "1:56360410058:web:7dbfae782e3c0d832df7ff"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  const WHATSAPP_NUMBER = "9647708888761";
+
+  const defaultSections = [
+    { id: 'icecream', title: 'آيس كريم', order: 1 },
+    { id: 'gelato', title: 'جيلاتو إيطالي', order: 2 },
+    { id: 'hotdrinks', title: 'مشروبات ساخنة', order: 3 },
+    { id: 'colddrinks', title: 'عصائر ومشروبات باردة', order: 4 },
+    { id: 'mojito', title: 'موهيتو وآيس تي', order: 5 },
+    { id: 'milkshake', title: 'ميلك شيك وفراب', order: 6 },
+    { id: 'cakesalad', title: 'كيك وسلطات ودونات', order: 7 },
+    { id: 'crepe', title: 'كريب', order: 8 },
+    { id: 'waffle', title: 'وافل', order: 9 },
+    { id: 'pancake', title: 'بانكيك', order: 10 },
+    { id: 'bano', title: 'كنافة وبانو', order: 11 },
+    { id: 'special', title: 'أصناف مميزة وباولز', order: 12 },
+    { id: 'birthdays', title: 'أعياد الميلاد', order: 13 }
+  ];
+
+  let sections = defaultSections;
+  let items = [];
+  let cart = [];
+  let isManualScroll = false;
+
+  function listenToData() {
+    renderSectionsBar();
+
+    db.collection("sections").onSnapshot(snapshot => {
+      if (!snapshot.empty) {
+        sections = snapshot.docs.map(doc => doc.data());
+        sections.sort((a, b) => (a.order || 0) - (b.order || 0));
+        renderSectionsBar();
+        renderMenu();
+      }
+    });
+
+    db.collection("items").onSnapshot(snapshot => {
+      items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      renderMenu();
+    });
+  }
+
+  function renderSectionsBar() {
+    const bar = document.getElementById('sectionsBar');
+    let html = `<button class="sec-btn active" data-sec="all" onclick="scrollToSec('all', this)">الكل</button>`;
+    sections.forEach(s => {
+      html += `<button class="sec-btn" data-sec="${s.id}" onclick="scrollToSec('${s.id}', this)">${s.title}</button>`;
+    });
+    bar.innerHTML = html;
+  }
+
+  function scrollToSec(secId, btn) {
+    isManualScroll = true;
+    document.querySelectorAll('.sec-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+
+    if (secId === 'all') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setTimeout(() => isManualScroll = false, 800);
+    } else {
+      const el = document.getElementById(`sec-${secId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+        setTimeout(() => isManualScroll = false, 800);
+      }
+    }
+  }
+
+  window.addEventListener('scroll', () => {
+    if (isManualScroll) return;
+    const scrollPos = window.scrollY + 130;
+    
+    sections.forEach(sec => {
+      const el = document.getElementById(`sec-${sec.id}`);
+      if (el) {
+        const top = el.offsetTop;
+        const height = el.offsetHeight;
+        if (scrollPos >= top && scrollPos < top + height) {
+          const btn = document.querySelector(`.sec-btn[data-sec="${sec.id}"]`);
+          if (btn && !btn.classList.contains('active')) {
+            document.querySelectorAll('.sec-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+          }
+        }
+      }
+    });
+  });
+
+  function parsePrice(priceStr) {
+    return parseInt(String(priceStr).replace(/[^0-9]/g, '')) || 0;
+  }
+
+  function renderMenu(query = '') {
+    const container = document.getElementById('menuContainer');
+    let fullHtml = '';
+
+    sections.forEach(sec => {
+      const secItems = items.filter(i => i.section === sec.id && (query === '' || i.name.toLowerCase().includes(query)));
+      if (secItems.length > 0) {
+        fullHtml += `<div id="sec-${sec.id}" class="section-block"><div class="section-title">${sec.title}</div><div class="grid-menu">`;
+        secItems.forEach(item => {
+          const imgContent = item.image ? `<img src="${item.image}" alt="${item.name}">` : `<span class="no-img-icon">🍨</span>`;
+          const descTag = item.desc ? `<div class="item-desc">${item.desc}</div>` : '';
+          const isAvail = item.isAvailable !== false;
+          
+          const cardClass = isAvail ? 'item-card' : 'item-card out-of-stock';
+          const outBadge = isAvail ? '' : `<div class="out-badge">غير متوفر</div>`;
+          const btnAttr = isAvail 
+            ? `onclick="addToCart('${item.name}', '${item.price}')"` 
+            : `disabled class="add-cart-btn disabled-btn"`;
+          const btnLabel = isAvail ? '➕ إضافة' : 'غير متوفر';
+
+          fullHtml += `
+            <div class="${cardClass}">
+              ${outBadge}
+              <div>
+                <div class="img-box">${imgContent}</div>
+                <div class="item-title">${item.name}</div>
+                ${descTag}
+              </div>
+              <div class="item-footer">
+                <div class="item-price">${item.price}</div>
+                <button class="add-cart-btn" ${btnAttr}>${btnLabel}</button>
+              </div>
+            </div>
+          `;
+        });
+        fullHtml += `</div></div>`;
+      }
+    });
+    container.innerHTML = fullHtml;
+  }
+
+  function filterMenu() {
+    const q = document.getElementById('searchInput').value.toLowerCase().trim();
+    renderMenu(q);
+  }
+
+  function validateTableInput(input) {
+    const orderType = document.getElementById('orderType').value;
+    if (orderType === 'داخل المحل') {
+      input.value = input.value.replace(/[^0-9]/g, '');
+    }
+  }
+
+  function handleOrderTypeChange() {
+    const orderType = document.getElementById('orderType').value;
+    const nameInput = document.getElementById('custName');
+    const addressInput = document.getElementById('custAddress');
+
+    if (orderType === 'داخل المحل') {
+      nameInput.placeholder = 'الاسم (إجباري) *';
+      addressInput.placeholder = 'رقم الطاولة (إجباري) *';
+      addressInput.inputMode = 'numeric';
+      addressInput.value = addressInput.value.replace(/[^0-9]/g, '');
+    } else if (orderType === 'توصيل') {
+      nameInput.placeholder = 'الاسم الكامل (إجباري) *';
+      addressInput.placeholder = 'عنوان التوصيل (إجباري) *';
+      addressInput.inputMode = 'text';
+    } else {
+      nameInput.placeholder = 'الاسم (إجباري) *';
+      addressInput.placeholder = 'ملاحظات إضافية (اختياري)';
+      addressInput.inputMode = 'text';
+    }
+  }
+
+  function addToCart(name, priceStr) {
+    const price = parsePrice(priceStr);
+    const existing = cart.find(i => i.name === name);
+    if (existing) existing.qty++;
+    else cart.push({ name, price, qty: 1 });
+    updateCartUI();
+  }
+
+  function updateQty(name, delta) {
+    const item = cart.find(i => i.name === name);
+    if (item) {
+      item.qty += delta;
+      if (item.qty <= 0) cart = cart.filter(i => i.name !== name);
+    }
+    updateCartUI();
+  }
+
+  function updateCartUI() {
+    const totalCount = cart.reduce((sum, i) => sum + i.qty, 0);
+    const totalPrice = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+    document.getElementById('cartCount').textContent = totalCount;
+    document.getElementById('cartTotalSum').textContent = totalPrice.toLocaleString() + ' د.ع';
+
+    const cartBar = document.getElementById('cartBar');
+    if (totalCount > 0) cartBar.style.display = 'flex';
+    else { cartBar.style.display = 'none'; closeCart(); }
+
+    const list = document.getElementById('cartItemsList');
+    let html = '';
+    cart.forEach(i => {
+      html += `
+        <div class="cart-item">
+          <div class="cart-item-details">
+            <strong>${i.name}</strong>
+            <span>${(i.price * i.qty).toLocaleString()} د.ع</span>
+          </div>
+          <div class="cart-item-controls">
+            <button class="qty-btn" onclick="updateQty('${i.name}', -1)">-</button>
+            <span style="font-weight:800;">${i.qty}</span>
+            <button class="qty-btn" onclick="updateQty('${i.name}', 1)">+</button>
+          </div>
+        </div>
+      `;
+    });
+    list.innerHTML = html;
+  }
+
+  function openCart() { document.getElementById('cartDrawer').style.display = 'flex'; }
+  function closeCart() { document.getElementById('cartDrawer').style.display = 'none'; }
+
+  function sendOrderToWhatsApp() {
+    if (cart.length === 0) return;
+    const orderType = document.getElementById('orderType').value;
+    const name = document.getElementById('custName').value.trim();
+    const address = document.getElementById('custAddress').value.trim();
+
+    if (!name) return alert('⚠️ يرجى كتابة اسمك أولاً!');
+    
+    if (orderType === 'داخل المحل' && !address) {
+      return alert('⚠️ يرجى كتابة رقم الطاولة (أرقام فقط)!');
+    }
+    if (orderType === 'توصيل' && !address) {
+      return alert('⚠️ يرجى كتابة عنوان التوصيل!');
+    }
+
+    const totalPrice = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+    let msg = `*طلب جديد من المنيو 📋*\n\n*نوع الطلب:* ${orderType}\n*الاسم:* ${name}\n`;
+    if (address) {
+      const label = orderType === 'داخل المحل' ? 'رقم الطاولة' : 'العنوان/الملاحظات';
+      msg += `*${label}:* ${address}\n`;
+    }
+    msg += `\n*الطلبات:*\n`;
+    cart.forEach((item, index) => {
+      msg += `${index + 1}. ${item.name} × ${item.qty} = ${(item.price * item.qty).toLocaleString()} د.ع\n`;
+    });
+    msg += `\n*المجموع:* ${totalPrice.toLocaleString()} د.ع\n`;
+
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+  }
+
+  listenToData();
+  handleOrderTypeChange();
+</script>
+</body>
+</html><!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>TOOT FRESH — المنيو الإلكتروني</title>
+
+<!-- PWA Metadata & iOS Support -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#123d46">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TOOT">
+<link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/938/938063.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Great+Vibes&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --p-color: #123d46;
+    --s-color: #123d46;
+    --bg-color: #FAF8F5;
+    --text-color: #0E2A30;
+    --white: #FFFFFF;
+    --line: rgba(18, 61, 70, 0.12);
+    --gold: #e5a323;
+    --whatsapp-green: #25D366;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    margin: 0; padding: 0;
+    background: var(--bg-color); color: var(--text-color);
+    font-family: 'Cairo', sans-serif; padding-bottom: 90px;
+  }
+
+  .header {
+    background: var(--bg-color);
+    text-align: center;
+    padding: 0 10px 25px;
+    position: relative;
+  }
+
+  .banner-svg {
+    width: 100%; height: auto; display: block; margin-bottom: -35px;
+  }
+
+  .circle-logo-icon {
+    width: 65px; height: 65px; background: #123d46; border-radius: 50%;
+    margin: 0 auto 12px; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15); position: relative; z-index: 2;
+    animation: logoPulse 2.5s infinite ease-in-out;
+  }
+
+  @keyframes logoPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.06); }
+    100% { transform: scale(1); }
+  }
+
+  .circle-logo-icon svg { width: 32px; height: 32px; fill: #FFFFFF; }
+
+  .brand-sub { font-family: 'Montserrat', sans-serif; font-size: 11px; font-weight: 800; color: #123d46; letter-spacing: 3px; margin: 0 0 2px; }
+  .brand-title { font-family: 'Montserrat', sans-serif; font-size: 38px; font-weight: 900; color: #123d46; margin: 0; line-height: 1; letter-spacing: 1px; }
+  .brand-desc { font-family: 'Montserrat', sans-serif; font-size: 9.5px; font-weight: 800; color: #123d46; letter-spacing: 1.5px; margin: 4px 0 12px; }
+  .slogan-text { font-family: 'Montserrat', sans-serif; font-size: 8.5px; font-weight: 800; color: #123d46; letter-spacing: 0.8px; margin: 0 0 8px; }
+
+  .flags-row { display: flex; justify-content: center; align-items: center; gap: 6px; margin-bottom: 14px; }
+  .flag-line { width: 18px; height: 3px; border-radius: 2px; }
+  .fl-red { background: #d9383a; }
+  .fl-black { background: #111111; }
+  .fl-green { background: #1b8a47; }
+  .fl-white { background: #ffffff; border: 1px solid #ddd; }
+
+  .menu-subtitle-gold { font-family: 'Montserrat', sans-serif; font-size: 16px; font-weight: 900; color: var(--gold); letter-spacing: 1.5px; margin: 0; line-height: 1; }
+  .menu-subtitle-script { font-family: 'Great Vibes', cursive; font-size: 42px; color: #123d46; margin: 2px 0 0; line-height: 1; }
+
+  .sticky-nav {
+    position: sticky; top: 0; background: var(--bg-color);
+    z-index: 100; padding: 8px 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .search-box {
+    width: 100%; padding: 8px 12px; border: 1px solid var(--line);
+    border-radius: 20px; font-family: inherit; font-size: 13px; outline: none;
+    background: var(--white);
+  }
+  .sections-bar {
+    display: flex; gap: 6px; overflow-x: auto; padding: 8px 0 2px; scrollbar-width: none;
+  }
+  .sections-bar::-webkit-scrollbar { display: none; }
+  .sec-btn {
+    white-space: nowrap; background: var(--white); color: var(--s-color);
+    border: 1px solid var(--line); padding: 5px 12px; border-radius: 16px;
+    font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+  }
+  .sec-btn.active { background: var(--p-color); color: var(--white); border-color: var(--p-color); }
+
+  .container { padding: 10px; max-width: 600px; margin: 0 auto; }
+  .section-block { scroll-margin-top: 110px; }
+  .section-title {
+    font-size: 15px; font-weight: 800; color: var(--s-color);
+    margin: 15px 0 8px; display: flex; align-items: center; gap: 8px;
+  }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+
+  .grid-menu { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+
+  .item-card {
+    background: var(--white); border-radius: 12px; border: 1px solid var(--line);
+    padding: 8px; display: flex; flex-direction: column; justify-content: space-between;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02); position: relative;
+  }
+  .item-card.out-of-stock { opacity: 0.75; }
+
+  .out-badge {
+    position: absolute; top: 12px; right: 12px;
+    background: rgba(127, 140, 141, 0.9); color: white;
+    font-size: 10px; font-weight: 800; padding: 2px 8px;
+    border-radius: 10px; z-index: 2;
+  }
+
+  .item-card .img-box {
+    width: 100%; height: 120px; border-radius: 8px;
+    margin-bottom: 6px; background: #fdfaf6; display: flex;
+    align-items: center; justify-content: center; overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.03);
+  }
+  .item-card img { width: 100%; height: 100%; object-fit: contain; padding: 2px; }
+  .item-card .no-img-icon { font-size: 32px; animation: iconBounce 2s infinite ease-in-out; }
+
+  @keyframes iconBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+  }
+  
+  .item-title { font-size: 12.5px; font-weight: 800; margin: 0 0 3px; color: var(--s-color); line-height: 1.25; }
+  .item-desc { font-size: 10px; color: #666; margin: 0 0 6px; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  
+  .item-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; gap: 4px; }
+  .item-price { font-size: 11.5px; font-weight: 800; color: var(--p-color); white-space: nowrap; }
+  
+  .add-cart-btn {
+    background: var(--p-color); color: var(--white); border: none;
+    padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;
+    cursor: pointer; font-family: inherit; white-space: nowrap; transition: transform 0.1s;
+  }
+  .add-cart-btn:active { transform: scale(0.95); }
+  .add-cart-btn.disabled-btn { background: #bdc3c7; cursor: not-allowed; opacity: 0.8; }
+
+  .cart-bar {
+    position: fixed; bottom: 12px; left: 12px; right: 12px;
+    max-width: 450px; margin: 0 auto; background: var(--s-color);
+    color: var(--white); padding: 10px 16px; border-radius: 25px;
+    display: flex; justify-content: space-between; align-items: center;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2); z-index: 1000; cursor: pointer;
+  }
+  .cart-info { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+  .cart-count {
+    background: #e67e22; color: white; font-weight: 900;
+    width: 24px; height: 24px; border-radius: 50%; display: flex;
+    align-items: center; justify-content: center; font-size: 12px;
+  }
+  .cart-total { font-size: 14px; font-weight: 800; }
+
+  .cart-drawer {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.6); z-index: 2000; display: none; justify-content: flex-end;
+  }
+  .cart-content {
+    background: var(--white); width: 100%; max-width: 400px; height: 100%;
+    display: flex; flex-direction: column; padding: 15px; box-shadow: -5px 0 25px rgba(0,0,0,0.2);
+  }
+  .cart-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--line); padding-bottom: 8px; }
+  .cart-header h2 { margin: 0; font-size: 16px; color: var(--s-color); }
+  .close-cart { font-size: 20px; cursor: pointer; border: none; background: none; font-weight: 800; }
+  
+  .cart-items-list { flex: 1; overflow-y: auto; margin: 10px 0; }
+  .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .cart-item-details strong { display: block; font-size: 13px; }
+  .cart-item-details span { font-size: 11px; color: var(--p-color); font-weight: 700; }
+  .cart-item-controls { display: flex; align-items: center; gap: 6px; }
+  .qty-btn { width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--p-color); background: var(--white); color: var(--p-color); font-weight: 800; cursor: pointer; }
+
+  .order-form { background: #fdfaf6; padding: 10px; border-radius: 8px; margin-bottom: 8px; }
+  .order-form input, .order-form select {
+    width: 100%; padding: 8px; margin-top: 6px; border: 1px solid var(--line);
+    border-radius: 6px; font-family: inherit; font-size: 12.5px; outline: none; background: var(--white);
+  }
+  .whatsapp-send-btn {
+    background: var(--whatsapp-green); color: var(--white); border: none;
+    padding: 10px; border-radius: 8px; font-weight: 800; font-size: 14px;
+    cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; font-family: inherit;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <svg class="banner-svg" viewBox="0 0 1000 120" preserveAspectRatio="none">
+    <path d="M0,20 Q500,100 1000,20 L1000,38 Q500,118 0,38 Z" fill="#123d46"/>
+  </svg>
+
+  <div class="circle-logo-icon">
+    <svg viewBox="0 0 24 24">
+      <path d="M19,7C19,5.89 18.1,5 17,5C16.8,5 16.61,5.03 16.43,5.09C15.68,3.28 13.9,2 11.8,2C9.4,2 7.42,3.67 6.9,5.92C6.62,5.84 6.31,5.8 6,5.8C4.34,5.8 3,7.14 3,8.8C3,9.85 3.54,10.77 4.36,11.3C4.13,11.82 4,12.39 4,13A5,5 0 0,0 9,18H10.17L11.41,21.72C11.53,22.08 11.87,22.32 12.25,22.32C12.63,22.32 12.97,22.08 13.09,21.72L14.33,18H15A5,5 0 0,0 20,13C20,12.39 19.87,11.82 19.64,11.3C20.46,10.77 21,9.85 21,8.8C21,7.8 20.2,7 19,7Z" />
+    </svg>
+  </div>
+
+  <p class="brand-sub">FRESH</p>
+  <h1 class="brand-title">TOOT</h1>
+  <p class="brand-desc">JUICE AND ICE CREAM</p>
+
+  <p class="slogan-text">THE FLAVOR OF ITALY THE SPIRIT OF IRAQ</p>
+
+  <div class="flags-row">
+    <div class="flag-line fl-red"></div>
+    <div class="flag-line fl-white"></div>
+    <div class="flag-line fl-black"></div>
+    <div class="flag-line fl-green"></div>
+    <div class="flag-line fl-white"></div>
+    <div class="flag-line fl-red"></div>
+  </div>
+
+  <p class="menu-subtitle-gold">ICE CREAM & DRINKS</p>
+  <p class="menu-subtitle-script">Menu</p>
+</div>
+
+<div class="sticky-nav">
+  <input type="text" class="search-box" id="searchInput" placeholder="🔍 بحث عن صنف..." autocomplete="off" oninput="filterMenu()">
+  <div class="sections-bar" id="sectionsBar"></div>
+</div>
+
+<div class="container" id="menuContainer"></div>
+
+<div class="cart-bar" id="cartBar" style="display:none;" onclick="openCart()">
+  <div class="cart-info">
+    <div class="cart-count" id="cartCount">0</div>
+    <span>سلة الطلبات</span>
+  </div>
+  <div class="cart-total" id="cartTotalSum">0 د.ع</div>
+</div>
+
+<div class="cart-drawer" id="cartDrawer">
+  <div class="cart-content">
+    <div class="cart-header">
+      <h2>🛒 تفاصيل الطلب</h2>
+      <button class="close-cart" onclick="closeCart()">✕</button>
+    </div>
+    <div class="cart-items-list" id="cartItemsList"></div>
+    <div class="order-form">
+      <label style="font-size:11px; font-weight:800;">بيانات التوصيل والطلب:</label>
+      <select id="orderType" onchange="handleOrderTypeChange()">
+        <option value="داخل المحل">تناول داخل المحل 🍽️</option>
+        <option value="سفري">سفري (تجهيز) 🛍️</option>
+        <option value="توصيل">توصيل منزلي 🛵</option>
+      </select>
+      <input type="text" id="custName" placeholder="الاسم (إجباري) *" autocomplete="off">
+      <input type="text" id="custAddress" placeholder="رقم الطاولة (إجباري) *" autocomplete="off" oninput="validateTableInput(this)">
+    </div>
+    <button class="whatsapp-send-btn" onclick="sendOrderToWhatsApp()">
+      📲 إرسال الطلب عبر الواتساب
+    </button>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js');
+  }
+
   const firebaseConfig = {
     apiKey: "AIzaSyCYo1y3e-S9y3I_U1kCg8a9J8E7kL0mN1o",
     authDomain: "toot-fresh-menu.firebaseapp.com",
