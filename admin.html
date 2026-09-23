@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>TOOT FRESH — لوحة التحكم</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#123d46">
@@ -20,94 +20,111 @@
     --gray: #7f8c8d;
     --green: #27ae60;
   }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0; padding: 15px;
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    width: 100%; overflow-x: hidden;
     background: var(--bg-color);
     font-family: 'Cairo', sans-serif;
     color: #134651;
   }
+  
   .login-box, .admin-container {
-    max-width: 600px; margin: 20px auto;
-    background: var(--white); padding: 25px;
-    border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    width: 100%; max-width: 500px;
+    margin: 10px auto; padding: 15px;
+    background: var(--white); border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
   }
-  .admin-logo { max-width: 140px; margin: 0 auto 15px; display: block; }
-  h2 { margin-top: 0; border-bottom: 2px solid var(--line); padding-bottom: 8px; text-align: center; font-size: 22px; font-weight: 900; }
+  .admin-logo { max-width: 110px; margin: 0 auto 10px; display: block; }
+  h2 { margin-top: 0; border-bottom: 2px solid var(--line); padding-bottom: 8px; text-align: center; font-size: 18px; font-weight: 900; }
+  
   input, select, button {
     width: 100%; padding: 10px; margin-top: 6px; margin-bottom: 10px;
-    border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-size: 14px;
+    border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-size: 13px;
   }
   input[type="file"] { background: #fdfaf6; cursor: pointer; }
   button {
     background: var(--p-color); color: white; border: none; font-weight: 800; cursor: pointer; border-radius: 8px;
   }
-  button:disabled { background: #ccc; cursor: not-allowed; }
   
   .settings-toggle-btn {
     background: #f0f4f5; color: var(--s-color); border: 1px solid var(--line);
-    padding: 10px; font-size: 13px; margin-bottom: 15px; border-radius: 8px;
+    padding: 10px; font-size: 12px; margin-bottom: 12px; border-radius: 8px;
     display: flex; justify-content: space-between; align-items: center;
   }
   .settings-card {
     background: #fdfaf6; border: 1px solid var(--line);
-    border-radius: 12px; padding: 15px; margin-bottom: 20px; display: none;
+    border-radius: 12px; padding: 12px; margin-bottom: 15px; display: none;
   }
 
   .filter-container {
-    display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;
+    display: flex; flex-direction: column; gap: 6px; margin-bottom: 15px;
   }
-  .filter-container select, .filter-container input {
-    margin: 0; flex: 1; min-width: 180px;
-  }
+  .filter-container select, .filter-container input { margin: 0; }
 
+  /* تصميم بطاقة الصنف المتجاوب للموبايل */
   .item-card {
     background: #fafafa; border: 1px solid var(--line);
-    border-radius: 10px; padding: 12px; margin-bottom: 10px;
-    display: flex; gap: 10px; align-items: center; justify-content: space-between;
+    border-radius: 12px; padding: 10px; margin-bottom: 10px;
+    display: flex; flex-direction: column; gap: 8px;
   }
-  .item-card.disabled-item { opacity: 0.6; background: #f2f2f2; }
-  .item-info-box { display: flex; align-items: center; gap: 10px; flex: 1; }
+  .item-card.disabled-item { opacity: 0.65; background: #f2f2f2; }
+  
+  .item-top-row {
+    display: flex; align-items: center; gap: 8px; width: 100%;
+  }
   .item-number {
-    background: var(--s-color); color: #fff; font-size: 12px; font-weight: 900;
-    padding: 4px 8px; border-radius: 6px; flex-shrink: 0;
+    background: var(--s-color); color: #fff; font-size: 11px; font-weight: 900;
+    padding: 3px 6px; border-radius: 6px; flex-shrink: 0;
   }
   .img-box {
-    width: 55px; height: 55px; border-radius: 8px; background: #e2e8f0;
+    width: 48px; height: 48px; border-radius: 8px; background: #e2e8f0;
     display: flex; align-items: center; justify-content: center;
     overflow: hidden; flex-shrink: 0; border: 1px solid var(--line);
   }
   .img-box img { width: 100%; height: 100%; object-fit: cover; }
-  .no-img-text { font-size: 10px; color: #888; text-align: center; }
+  .no-img-text { font-size: 9px; color: #888; text-align: center; }
 
-  .item-actions { display: flex; gap: 4px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
-  .btn-sm { width: auto; padding: 6px 8px; font-size: 11.5px; margin: 0; border-radius: 6px; }
+  .item-details { flex: 1; min-width: 0; }
+  .item-title-text { font-size: 13px; font-weight: 800; color: var(--s-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .item-price-text { font-size: 12px; color: var(--p-color); font-weight: 800; }
+
+  .item-actions {
+    display: flex; gap: 5px; width: 100%; border-top: 1px solid var(--line); padding-top: 6px;
+  }
+  .btn-sm {
+    flex: 1; padding: 6px 2px; font-size: 11px; margin: 0; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center; text-align: center; white-space: nowrap;
+  }
   .btn-edit { background: var(--warning); }
   .btn-del { background: var(--danger); }
   .btn-status-on { background: var(--green); }
   .btn-status-off { background: var(--gray); }
 
+  /* النافذة المنبثقة للتعديل متجاوبة */
   .modal {
     position: fixed; top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center;
-    z-index: 1000; padding: 15px;
+    z-index: 1000; padding: 10px;
   }
   .modal-content {
-    background: var(--white); padding: 20px; border-radius: 12px;
-    width: 100%; max-width: 450px; box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+    background: var(--white); padding: 15px; border-radius: 14px;
+    width: 100%; max-width: 400px; box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+    max-height: 90vh; overflow-y: auto;
   }
 
-  .sec-tag-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; margin-bottom: 10px; }
+  /* تصميم الأقسام */
+  .sec-tag-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; margin-bottom: 8px; }
   .sec-tag {
-    background: #eef5f6; border: 1px solid var(--line); padding: 5px 10px;
-    border-radius: 12px; font-size: 12.5px; font-weight: 700; display: flex; align-items: center; gap: 6px;
+    background: #eef5f6; border: 1px solid var(--line); padding: 4px 8px;
+    border-radius: 10px; font-size: 11.5px; font-weight: 700; display: flex; align-items: center; gap: 5px;
   }
   .sec-order-input {
-    width: 32px !important; height: 26px !important; padding: 0 !important;
-    margin: 0 !important; text-align: center; font-size: 12px; font-weight: 800;
-    border: 1px solid var(--line); border-radius: 6px; background: #fff;
+    width: 28px !important; height: 24px !important; padding: 0 !important;
+    margin: 0 !important; text-align: center; font-size: 11px; font-weight: 800;
+    border: 1px solid var(--line); border-radius: 5px; background: #fff;
   }
-  .sec-action-icon { cursor: pointer; font-size: 13px; }
+  .sec-action-icon { cursor: pointer; font-size: 12px; }
 </style>
 </head>
 <body>
@@ -140,33 +157,33 @@
   </button>
 
   <div class="settings-card" id="settingsBox">
-    <h3 style="margin-top:0; font-size:15px; color:var(--s-color);">🔑 التعديل على بيانات الحساب</h3>
-    <input type="password" id="oldAdminPass" placeholder="كلمة المرور الحالية (إجباري) *" autocomplete="off">
+    <h3 style="margin-top:0; font-size:13px; color:var(--s-color);">🔑 التعديل على بيانات الحساب</h3>
+    <input type="password" id="oldAdminPass" placeholder="كلمة المرور الحالية *" autocomplete="off">
     <input type="text" id="newAdminUser" placeholder="اسم المستخدم الجديد" autocomplete="off">
     <input type="password" id="newAdminPass" placeholder="كلمة المرور الجديدة" autocomplete="off">
-    <button onclick="updateAdminCredentials()" style="background:var(--purple); margin-bottom:0; margin-top:8px;">💾 تحديث البيانات</button>
+    <button onclick="updateAdminCredentials()" style="background:var(--purple); margin-bottom:0; margin-top:6px;">💾 تحديث البيانات</button>
   </div>
 
-  <div style="background: #fdfaf6; border: 1px solid var(--line); border-radius: 12px; padding: 15px; margin-bottom: 20px;">
-    <h3 style="margin-top:0; font-size:15px; color:var(--s-color);">📁 إضافة وإدارة الأقسام:</h3>
-    <div style="display:flex; gap:8px;">
+  <div style="background: #fdfaf6; border: 1px solid var(--line); border-radius: 12px; padding: 12px; margin-bottom: 15px;">
+    <h3 style="margin-top:0; font-size:13px; color:var(--s-color);">📁 إضافة وإدارة الأقسام:</h3>
+    <div style="display:flex; gap:6px;">
       <input type="text" id="newSecTitle" placeholder="اسم القسم الجديد" autocomplete="off" style="margin-top:0; margin-bottom:0;">
-      <button onclick="addNewSection()" style="width:120px; margin-top:0; margin-bottom:0; flex-shrink:0;">➕ إضافة</button>
+      <button onclick="addNewSection()" style="width:90px; margin-top:0; margin-bottom:0; flex-shrink:0;">➕ إضافة</button>
     </div>
     <div class="sec-tag-list" id="sectionsTagList">جاري التحميل...</div>
   </div>
 
-  <h3>إضافة صنف جديد:</h3>
+  <h3 style="font-size:14px;">إضافة صنف جديد:</h3>
   <input type="text" id="itemName" placeholder="اسم الصنف" autocomplete="off">
   <select id="itemSec"></select>
   <input type="text" id="itemPrice" placeholder="السعر (مثال: 5.000 د.ع)" autocomplete="off">
   
-  <label style="font-size: 12px; font-weight: 800; display: block;">صورة للصنف (اختياري):</label>
+  <label style="font-size: 11px; font-weight: 800; display: block;">صورة للصنف (اختياري):</label>
   <input type="file" id="itemFile" accept="image/*">
   
   <button id="addBtn" onclick="addItem()">➕ إضافة الصنف للمنيو</button>
 
-  <h3 style="margin-top: 25px;">الأصناف الحالية المرفوعة:</h3>
+  <h3 style="margin-top: 20px; font-size:14px;">الأصناف الحالية المرفوعة:</h3>
   
   <div class="filter-container">
     <select id="filterSec" onchange="renderAdminItems()">
@@ -180,18 +197,18 @@
 
 <div class="modal" id="editModal">
   <div class="modal-content">
-    <h3 style="margin-top:0;">✏️ تعديل بيانات الصنف</h3>
+    <h3 style="margin-top:0; font-size:15px;">✏️ تعديل بيانات الصنف</h3>
     <input type="hidden" id="editId">
-    <label style="font-size:12px; font-weight:800;">اسم الصنف:</label>
+    <label style="font-size:11px; font-weight:800;">اسم الصنف:</label>
     <input type="text" id="editName" autocomplete="off">
-    <label style="font-size:12px; font-weight:800;">القسم:</label>
+    <label style="font-size:11px; font-weight:800;">القسم:</label>
     <select id="editSec"></select>
-    <label style="font-size:12px; font-weight:800;">السعر:</label>
+    <label style="font-size:11px; font-weight:800;">السعر:</label>
     <input type="text" id="editPrice" autocomplete="off">
-    <label style="font-size:12px; font-weight:800;">تغيير الصورة (اختياري):</label>
+    <label style="font-size:11px; font-weight:800;">تغيير الصورة (اختياري):</label>
     <input type="file" id="editFile" accept="image/*">
-    <div style="display:flex; gap:10px; margin-top:10px;">
-      <button onclick="saveEdit()" style="background:var(--p-color);">حفظ التغييرات</button>
+    <div style="display:flex; gap:8px; margin-top:8px;">
+      <button onclick="saveEdit()" style="background:var(--p-color);">حفظ</button>
       <button onclick="closeEditModal()" style="background:#888;">إلغاء</button>
     </div>
   </div>
@@ -201,6 +218,10 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 
 <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js');
+  }
+
   const firebaseConfig = {
     apiKey: "AIzaSyCYo1y3e-S9y3I_U1kCg8a9J8E7kL0mN1o",
     authDomain: "toot-fresh-menu.firebaseapp.com",
@@ -383,12 +404,12 @@
 
       htmlBuffer += `
         <div class="item-card ${isAvailable ? '' : 'disabled-item'}">
-          <div class="item-info-box">
+          <div class="item-top-row">
             <div class="item-number">#${index + 1}</div>
             <div class="img-box">${imgContent}</div>
-            <div>
-              <strong style="display:block; font-size:14px;">${item.name}</strong>
-              <span style="font-size:12.5px; color:var(--p-color); font-weight:800;">${item.price}</span>
+            <div class="item-details">
+              <div class="item-title-text">${item.name}</div>
+              <div class="item-price-text">${item.price}</div>
             </div>
           </div>
           <div class="item-actions">
