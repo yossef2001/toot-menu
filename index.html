@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>TOOT FRESH — المنيو الإلكتروني</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#123d46">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Great+Vibes&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
@@ -270,8 +272,6 @@
 
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
-  
-  // تم تحديث رقم الواتساب إلى الرقم المطلوب
   const WHATSAPP_NUMBER = "9647708888761";
 
   const defaultSections = [
