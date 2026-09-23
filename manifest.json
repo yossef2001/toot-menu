@@ -6,13 +6,13 @@
   "background_color": "#123d46",
   "theme_color": "#123d46",
   "orientation": "portrait",
-  "id": "toot_fresh_app_v2",
+  "id": "toot_fresh_app_v3",
   "scope": "./",
   "icons": [
     {
-      "src": "https://img.icons8.com/color/512/blackberry.png",
+      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' fill='%23123d46'/><circle cx='256' cy='256' r='200' fill='%23ffffff'/><path d='M256 120 C220 120 190 150 190 190 C190 210 200 226 214 240 L256 320 L298 240 C312 226 322 210 322 190 C322 150 292 120 256 120 Z' fill='%23123d46'/><text x='256' y='380' font-family='sans-serif' font-weight='900' font-size='65' fill='%23ffffff' text-anchor='middle'>TOOT</text></svg>",
       "sizes": "192x192 512x512",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "any maskable"
     }
   ]
