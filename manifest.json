@@ -3,14 +3,14 @@
   "short_name": "TOOT",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#FAF8F5",
+  "background_color": "#123d46",
   "theme_color": "#123d46",
   "orientation": "portrait",
   "id": "toot_fresh_pwa_app",
   "scope": "./",
   "icons": [
     {
-      "src": "https://img.icons8.com/color/512/blackberry.png",
+      "src": "https://cdn-icons-png.flaticon.com/512/938/938063.png",
       "sizes": "192x192 512x512",
       "type": "image/png",
       "purpose": "any maskable"
